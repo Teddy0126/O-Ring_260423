@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-Ring 填充率計算機</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 隱藏數字輸入框的上下箭頭 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#121212] p-4 md:p-8 font-sans text-gray-300">
+    <div class="max-w-6xl mx-auto bg-gray-900 rounded-lg shadow-2xl overflow-hidden border border-gray-800">
+        
+        <!-- 標題區塊 -->
+        <div class="bg-black border-b-4 border-purple-600 text-white px-6 py-4 flex items-center justify-between">
+            <h1 class="text-2xl font-bold tracking-wider flex items-center gap-2">
+                <svg class="w-8 h-8 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+                O-Ring 填充率計算機
+            </h1>
+            <div class="text-sm text-purple-400 opacity-90 font-mono">Volumetric + Thermal Expansion Method</div>
+        </div>
+
+        <!-- 主要內容區 -->
+        <div class="p-6">
+            
+            <!-- 環境與材質設定區塊 -->
+            <div class="mb-6 bg-gray-800 border border-gray-700 rounded-lg p-5 shadow-sm">
+                <h3 class="text-lg font-bold text-purple-400 mb-4 border-b border-gray-700 pb-2">
+                    環境與材質設定 (Environment & Material)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">O-Ring 材質 (Material)</label>
+                        <select id="material-select" class="w-full px-3 py-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="1.97e-4">NBR (CLTE: 1.97E-04)</option>
+                            <option value="1.95e-4">HNBR (CLTE: 1.95E-04)</option>
+                            <option value="2.29e-4">AEM (CLTE: 2.29E-04)</option>
+                            <option value="2.01e-4" selected>EPDM (CLTE: 2.01E-04)</option>
+                            <option value="1.98e-4">FKM (CLTE: 1.98E-04)</option>
+                            <option value="2.67e-4">Low Temperature FKM (CLTE: 2.67E-04)</option>
+                            <option value="2.85e-4">Aflas (CLTE: 2.85E-04)</option>
+                            <option value="3.91e-4">FFKM (CLTE: 3.91E-04)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">安裝/基準溫度 (°C)</label>
+                        <input type="number" id="temp-ref" value="25" class="w-full px-3 py-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">系統工作溫度 (°C)</label>
+                        <input type="number" id="temp-work" value="125" class="w-full px-3 py-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- 輸入區塊 -->
+            <div class="mb-8 overflow-x-auto">
+                <div class="bg-purple-900/60 text-purple-100 px-4 py-2 rounded-t-md font-semibold tracking-wide border-b border-purple-500/50">
+                    硬體尺寸參數 (Hardware Dimensions in mm)
+                </div>
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead class="bg-gray-800 border-b-2 border-purple-700/50 text-gray-300">
+                        <tr>
+                            <th class="px-4 py-3 w-1/4">參數名稱</th>
+                            <th class="px-4 py-3 text-center">符號</th>
+                            <th class="px-4 py-3 text-center">標稱尺寸<br/>(Nominal)</th>
+                            <th class="px-4 py-3 text-center">下限公差<br/>(Lower Tol)</th>
+                            <th class="px-4 py-3 text-center">上限公差<br/>(Upper Tol)</th>
+                            <th class="px-4 py-3 text-center bg-gray-800/80 text-purple-300 border-l border-gray-700">最小尺寸<br/>(Min)</th>
+                            <th class="px-4 py-3 text-center bg-gray-800/80 text-purple-300 border-l border-gray-700">最大尺寸<br/>(Max)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="params-body" class="divide-y divide-gray-800">
+                        <!-- 表格內容將由 JavaScript 動態生成 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 計算結果區塊 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- 最小填充率面板 -->
+                <div class="bg-gray-800 border border-gray-700 rounded-lg p-5 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-200 mb-4 border-b border-gray-700 pb-2">
+                        最小公差狀態 (Min. Condition)
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">
+                                O-Ring 最小體積 
+                                <span id="min-exp-note" class="text-xs text-purple-400 ml-1 font-mono"></span>
+                            </span>
+                            <span id="min-voring" class="font-mono text-gray-200">0.00 mm³</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">溝槽最大體積 (V_groove_max)</span>
+                            <span id="min-vgroove" class="font-mono text-gray-200">0.00 mm³</span>
+                        </div>
+                        <div class="pt-3 mt-3 border-t border-gray-700 flex justify-between items-center">
+                            <span class="font-bold text-gray-200">最小填充率 (Min Housing Fill)</span>
+                            <span id="min-fill" class="text-2xl font-bold text-purple-400">0.00%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最大填充率面板 -->
+                <div id="max-panel" class="border rounded-lg p-5 shadow-sm transition-colors bg-gray-800 border-gray-700">
+                    <h3 id="max-panel-title" class="text-lg font-bold mb-4 border-b pb-2 text-gray-200 border-gray-700">
+                        最大公差狀態 (Max. Condition)
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span id="max-voring-label" class="text-gray-400">
+                                O-Ring 最大體積
+                                <span id="max-exp-note" class="text-xs text-purple-400 ml-1 font-mono"></span>
+                            </span>
+                            <span id="max-voring" class="font-mono text-gray-200">0.00 mm³</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span id="max-vgroove-label" class="text-gray-400">溝槽最小體積 (V_groove_min)</span>
+                            <span id="max-vgroove" class="font-mono text-gray-200">0.00 mm³</span>
+                        </div>
+                        <div id="max-fill-divider" class="pt-3 mt-3 border-t flex justify-between items-center border-gray-700">
+                            <span class="font-bold text-gray-200">最大填充率 (Max Housing Fill)</span>
+                            <span id="max-fill" class="text-2xl font-bold text-purple-400">0.00%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 警告訊息 (預設隱藏) -->
+                    <div id="warning-banner" class="hidden mt-4 p-3 bg-red-900/30 border border-red-800 text-red-300 rounded text-sm font-semibold items-start shadow-inner">
+                        <svg class="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Warning: 最大填充率超過 85%！高溫膨脹或公差累積可能導致 O-Ring 被擠出損壞或發生熱鎖死現象。建議調整公差、溝槽尺寸或更換不同膨脹係數的材質。
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-sm text-gray-400 p-4 bg-gray-800/50 rounded border border-gray-800 space-y-2">
+                <p><strong class="text-purple-400">公式計算備註：</strong>本計算機採用純體積計算模型 (Volumetric Method)，精確扣除溝槽圓角造成的死角體積。</p>
+                <p><strong class="text-purple-400">熱膨脹原理：</strong>橡膠體積熱膨脹係數約等於線性膨脹係數 (CLTE) 的 3 倍 ($\beta \approx 3\alpha$)。程式會自動依據設定溫差 ($\Delta T$) 計算膨脹後的橡膠體積並修正最終填充率。計算過程中忽略金屬溝槽的微小熱膨脹以確保最大的安全餘裕。</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 預設參數 
+        const params = {
+            d4: { name: '孔徑 (Bore-Ø)', symbol: 'd₄', nom: '10.550', tolL: '-0.050', tolU: '0.000' },
+            d3: { name: '溝槽底徑 (Groove-Ø)', symbol: 'd₃', nom: '7.950', tolL: '-0.050', tolU: '0.050' },
+            b1: { name: '溝槽寬度 (Groove Width)', symbol: 'b₁', nom: '2.500', tolL: '-0.050', tolU: '0.050' },
+            r:  { name: '溝槽圓角 (Groove Radius)', symbol: 'r', nom: '0.200', tolL: '-0.100', tolU: '0.100' },
+            d1: { name: 'O-Ring 內徑 (Inside-Ø)', symbol: 'd₁', nom: '7.650', tolL: '-0.130', tolU: '0.220' },
+            d2: { name: 'O-Ring 線徑 (Cross-Section-Ø)', symbol: 'd₂', nom: '1.780', tolL: '-0.070', tolU: '0.090' },
+        };
+
+        // DOM 元素快取
+        const materialSelect = document.getElementById('material-select');
+        const tempRefInput = document.getElementById('temp-ref');
+        const tempWorkInput = document.getElementById('temp-work');
+        
+        // 綁定事件監聽
+        materialSelect.addEventListener('change', calculateAndUpdate);
+        tempRefInput.addEventListener('input', calculateAndUpdate);
+        tempWorkInput.addEventListener('input', calculateAndUpdate);
+
+        // 初始化表格 DOM
+        function initTable() {
+            const tbody = document.getElementById('params-body');
+            const inputClass = "w-full px-2 py-1 text-right bg-gray-800 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500";
+            
+            Object.keys(params).forEach(key => {
+                const p = params[key];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-purple-900/10 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-2 font-medium text-gray-200">${p.name}</td>
+                    <td class="px-4 py-2 text-center font-mono text-purple-400 bg-gray-800/50">${p.symbol}</td>
+                    <td class="px-4 py-2">
+                        <input type="number" step="0.001" value="${p.nom}" data-key="${key}" data-field="nom" class="${inputClass}" />
+                    </td>
+                    <td class="px-4 py-2">
+                        <input type="number" step="0.001" value="${p.tolL}" data-key="${key}" data-field="tolL" class="${inputClass}" />
+                    </td>
+                    <td class="px-4 py-2">
+                        <input type="number" step="0.001" value="${p.tolU}" data-key="${key}" data-field="tolU" class="${inputClass}" />
+                    </td>
+                    <td class="px-4 py-2 text-center font-mono bg-purple-900/10 border-l border-gray-800 text-gray-300" id="dim-min-${key}">
+                        0.000
+                    </td>
+                    <td class="px-4 py-2 text-center font-mono bg-purple-900/10 border-l border-gray-800 text-gray-300" id="dim-max-${key}">
+                        0.000
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 監聽輸入事件 (Event Delegation)
+            tbody.addEventListener('input', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    const key = e.target.getAttribute('data-key');
+                    const field = e.target.getAttribute('data-field');
+                    // 更新內部狀態
+                    params[key][field] = e.target.value;
+                    // 重新計算並更新 DOM，不重繪 input 以保留游標
+                    calculateAndUpdate();
+                }
+            });
+        }
+
+        // 計算與更新邏輯
+        function calculateAndUpdate() {
+            const dims = {};
+            
+            // 1. 計算所有變量的 Min 和 Max 尺寸
+            Object.keys(params).forEach(key => {
+                const p = params[key];
+                const nom = isNaN(parseFloat(p.nom)) ? 0 : parseFloat(p.nom);
+                const tolL = isNaN(parseFloat(p.tolL)) ? 0 : parseFloat(p.tolL);
+                const tolU = isNaN(parseFloat(p.tolU)) ? 0 : parseFloat(p.tolU);
+                
+                const minVal = nom + tolL;
+                const maxVal = nom + tolU;
+                dims[key] = { min: minVal, max: maxVal };
+
+                // 更新單列的最大與最小值顯示
+                document.getElementById(`dim-min-${key}`).textContent = minVal.toFixed(3);
+                document.getElementById(`dim-max-${key}`).textContent = maxVal.toFixed(3);
+            });
+
+            // --- 提取熱膨脹參數 ---
+            const clte = parseFloat(materialSelect.value) || 0;
+            const tRef = parseFloat(tempRefInput.value) || 25;
+            const tWork = parseFloat(tempWorkInput.value) || 25;
+            const deltaT = tWork - tRef;
+            
+            // 體積膨脹係數 (Volumetric Expansion = 1 + 3 * CLTE * ΔT)
+            const volMultiplier = 1 + (3 * clte * deltaT);
+            const expPercent = ((volMultiplier - 1) * 100).toFixed(2);
+            const expText = deltaT !== 0 ? `(體積修正: ${expPercent > 0 ? '+' : ''}${expPercent}%)` : '';
+            
+            document.getElementById('min-exp-note').textContent = expText;
+            document.getElementById('max-exp-note').textContent = expText;
+
+            // --- 基礎 O-Ring 體積計算 (基準溫度下) ---
+            const vOringMax_base = (Math.pow(Math.PI, 2) / 4) * Math.pow(dims.d2.max, 2) * (dims.d1.max + dims.d2.max);
+            const vOringMin_base = (Math.pow(Math.PI, 2) / 4) * Math.pow(dims.d2.min, 2) * (dims.d1.min + dims.d2.min);
+
+            // --- 乘上熱膨脹修正係數 ---
+            const vOringMax_hot = vOringMax_base * volMultiplier;
+            const vOringMin_hot = vOringMin_base * volMultiplier;
+
+            // --- 溝槽體積計算 ---
+            const vGrooveRawMin = (Math.PI / 4) * (Math.pow(dims.d4.min, 2) - Math.pow(dims.d3.max, 2)) * dims.b1.min;
+            const vRadiusMax = Math.PI * Math.pow(dims.r.max, 2) * (1 - Math.PI / 4) * (dims.d3.max + dims.d4.min);
+            const vGrooveMin = vGrooveRawMin - vRadiusMax;
+            
+            const vGrooveRawMax = (Math.PI / 4) * (Math.pow(dims.d4.max, 2) - Math.pow(dims.d3.min, 2)) * dims.b1.max;
+            const vRadiusMin = Math.PI * Math.pow(dims.r.min, 2) * (1 - Math.PI / 4) * (dims.d3.min + dims.d4.max);
+            const vGrooveMax = vGrooveRawMax - vRadiusMin;
+
+            // --- 計算修正後的填充率 ---
+            const fillMax = vGrooveMin > 0 ? (vOringMax_hot / vGrooveMin) * 100 : 0; 
+            const fillMin = vGrooveMax > 0 ? (vOringMin_hot / vGrooveMax) * 100 : 0;
+
+            // --- 更新面板數值 ---
+            document.getElementById('min-voring').textContent = vOringMin_hot.toFixed(2) + ' mm³';
+            document.getElementById('min-vgroove').textContent = vGrooveMax.toFixed(2) + ' mm³';
+            document.getElementById('min-fill').textContent = fillMin.toFixed(2) + '%';
+
+            document.getElementById('max-voring').textContent = vOringMax_hot.toFixed(2) + ' mm³';
+            document.getElementById('max-vgroove').textContent = vGrooveMin.toFixed(2) + ' mm³';
+            const maxFillEl = document.getElementById('max-fill');
+            maxFillEl.textContent = fillMax.toFixed(2) + '%';
+
+            // --- 處理警告樣式切換 ---
+            const isWarning = fillMax > 85;
+            
+            const maxPanel = document.getElementById('max-panel');
+            const maxPanelTitle = document.getElementById('max-panel-title');
+            const maxVoringLabel = document.getElementById('max-voring-label');
+            const maxVgrooveLabel = document.getElementById('max-vgroove-label');
+            const maxFillDivider = document.getElementById('max-fill-divider');
+            const warningBanner = document.getElementById('warning-banner');
+
+            if (isWarning) {
+                maxPanel.className = "border rounded-lg p-5 shadow-sm transition-colors bg-red-950/40 border-red-800";
+                maxPanelTitle.className = "text-lg font-bold mb-4 border-b pb-2 text-red-400 border-red-800/50";
+                maxVoringLabel.className = "text-red-300/80";
+                maxVgrooveLabel.className = "text-red-300/80";
+                maxFillDivider.className = "pt-3 mt-3 border-t flex justify-between items-center border-red-800/50";
+                maxFillEl.className = "text-2xl font-bold text-red-400";
+                
+                // 動態更換警告色字體 (包含修正標籤)
+                document.getElementById('max-exp-note').className = "text-xs text-red-400 ml-1 font-mono";
+                warningBanner.style.display = 'flex';
+            } else {
+                maxPanel.className = "border rounded-lg p-5 shadow-sm transition-colors bg-gray-800 border-gray-700";
+                maxPanelTitle.className = "text-lg font-bold mb-4 border-b pb-2 text-gray-200 border-gray-700";
+                maxVoringLabel.className = "text-gray-400";
+                maxVgrooveLabel.className = "text-gray-400";
+                maxFillDivider.className = "pt-3 mt-3 border-t flex justify-between items-center border-gray-700";
+                maxFillEl.className = "text-2xl font-bold text-purple-400";
+                
+                document.getElementById('max-exp-note').className = "text-xs text-purple-400 ml-1 font-mono";
+                warningBanner.style.display = 'none';
+            }
+        }
+
+        // 頁面載入完成後執行
+        window.addEventListener('DOMContentLoaded', () => {
+            initTable();
+            calculateAndUpdate();
+        });
+    </script>
+</body>
+</html>
